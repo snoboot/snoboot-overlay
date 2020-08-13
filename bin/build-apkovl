@@ -1,0 +1,4 @@
+#!/bin/sh
+
+cd "$(dirname $0)/.."
+git archive --format=tar.gz -o snoboot.apkovl.tar.gz HEAD snoboot-apkovl/
