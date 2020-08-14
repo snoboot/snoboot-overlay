@@ -1,7 +1,7 @@
 #!/bin/sh
 #
 # Updates the current branch, by merging the branches specified
-# in the "recipe" file
+# as dependencies
 #
 # SPDX-License-Identifier: Apache-2.0
 # Copyright 2020 Christian Kohlschuetter -- see NOTICE file

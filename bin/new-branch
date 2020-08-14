@@ -1,7 +1,7 @@
 #!/bin/sh
 #
 # Creates a new git branch, and appends the current branch's name
-# to the "recipe" file
+# to its dependencies
 #
 # SPDX-License-Identifier: Apache-2.0
 # Copyright 2020 Christian Kohlschuetter -- see NOTICE file
