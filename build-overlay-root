@@ -1,0 +1,28 @@
+#!/bin/sh
+#
+# Creates a tar.gz archive from the contents of the "rootlevel" directory.
+# taking mtree options specified in .gitattributes into account
+#
+# SPDX-License-Identifier: Apache-2.0
+# Copyright 2020 Christian Kohlschuetter -- see NOTICE file
+
+cd "$(dirname $0)/.."
+
+IFS=$'\n'
+
+cd rootlevel && \
+(
+echo '#mtree'
+
+for f in $(git ls-files . | grep -v "/\.git"); do
+  realOpts=$(tar -cnf - --format=mtree --options='!all,type,time,size,link' "$f" | tail -n 1)
+  realOpts=${realOpts#* }
+
+  echo $f uname=root gname=root $realOpts $(
+  for attr in $(git check-attr mode uid gid uname gname -- "$f" | grep -v ": unspecified"); do
+    opts=${attr#*: }
+    echo ${opts/: /=}
+  done
+  )
+done
+) | tar cvzf ../snoboot-overlay-root.tar.gz @-
