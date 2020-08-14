@@ -14,7 +14,7 @@ cd rootlevel && \
 (
 echo '#mtree'
 
-for f in $(git ls-files .); do
+for f in $(git ls-files . | grep -v "/\.git"); do
   realOpts=$(tar -cnf - --format=mtree --options='!all,type,time,size,link' "$f" | tail -n 1)
   realOpts=${realOpts#* }
 
