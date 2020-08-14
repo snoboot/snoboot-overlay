@@ -17,8 +17,9 @@ fi
 
 git checkout -b "$1"
 
-cat ./recipe | grep -xq "$currentBranch" || (
-  echo "$currentBranch" >> ./recipe
-  git add ./recipe
-  git commit -m "New branch based on: $currentBranch"
-)
+mkdir -p ./dependencies
+escapedBranchName=${currentBranch//// }
+depFile="./dependencies/$escapedBranchName"
+touch "$depFile"
+git add "$depFile"
+git commit -m "New branch based on: $currentBranch"
