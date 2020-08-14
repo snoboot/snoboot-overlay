@@ -1,6 +1,6 @@
 #!/bin/sh
 #
-# Creates a tar.gz archive from the contents of snoboot-apkovl,
+# Creates a tar.gz archive from the contents of the "rootlevel" directory.
 # taking mtree options specified in .gitattributes into account
 #
 # SPDX-License-Identifier: Apache-2.0
@@ -10,7 +10,7 @@ cd "$(dirname $0)/.."
 
 IFS=$'\n'
 
-cd snoboot-apkovl && \
+cd rootlevel && \
 (
 echo '#mtree'
 
@@ -25,4 +25,4 @@ for f in $(git ls-files .); do
   done
   )
 done
-) | tar cvzf ../snoboot.apkovl.tar.gz @-
+) | tar cvzf ../snoboot-overlay-root.tar.gz @-
