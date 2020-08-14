@@ -1,4 +1,28 @@
 #!/bin/sh
+#
+# Creates a tar.gz archive from the contents of snoboot-apkovl,
+# taking mtree options specified in .gitattributes into account
+#
+# SPDX-License-Identifier: Apache-2.0
+# Copyright 2020 Christian Kohlschuetter -- see NOTICE file
 
 cd "$(dirname $0)/.."
-git archive --format=tar.gz -o snoboot.apkovl.tar.gz HEAD snoboot-apkovl/
+
+IFS=$'\n'
+
+cd snoboot-apkovl && \
+(
+echo '#mtree'
+
+for f in $(git ls-files .); do
+  realOpts=$(tar -cnf - --format=mtree --options='!all,type,time,size,link' "$f" | tail -n 1)
+  realOpts=${realOpts#* }
+
+  echo $f uname=root gname=root $realOpts $(
+  for attr in $(git check-attr mode uid gid uname gname -- "$f" | grep -v ": unspecified"); do
+    opts=${attr#*: }
+    echo ${opts/: /=}
+  done
+  )
+done
+) | tar cvzf ../snoboot.apkovl.tar.gz @-
