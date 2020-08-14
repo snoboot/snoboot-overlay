@@ -2,4 +2,5 @@
 *~~
 .DS_Store
 .*.swp
+/snoboot-overlay-root.tar.gz
 /*.apkovl.tar.gz
