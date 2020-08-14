@@ -1,0 +1,15 @@
+#!/bin/sh
+#
+# Creates a new git branch, and appends the current branch's name
+# to the "recipe" file
+#
+# SPDX-License-Identifier: Apache-2.0
+# Copyright 2020 Christian Kohlschuetter -- see NOTICE file
+
+cd "$(dirname $0)/.."
+
+set -e
+currentBranch=$(git branch --show-current)
+git checkout -b "$1"
+
+cat ./recipe | grep -xq "$currentBranch" || echo "$currentBranch" >> ./recipe
