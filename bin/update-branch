@@ -1,7 +1,7 @@
 #!/bin/sh
 #
 # Updates the current branch, by merging the branches specified
-# in the "recipe" file
+# as dependencies
 #
 # SPDX-License-Identifier: Apache-2.0
 # Copyright 2020 Christian Kohlschuetter -- see NOTICE file
@@ -12,10 +12,10 @@ prefix=
 [ -n "$1" ] && git fetch "$1" && prefix="$1"/
 
 set -e
-while read line; do
-  [[ "$line" =~ ^# ]] && continue
 
-  branch="$line"
+IFS=$'\n'
+for file in $(ls -1 -t -r dependencies); do
+  branch=${file// //}
   if [ -n "$prefix" ]; then
     prefixedBranch="$prefix$branch"
     git rev-parse --verify --quiet "$prefixedBranch" >/dev/null && branch="$prefixedBranch"
@@ -25,4 +25,4 @@ while read line; do
   fi
 
   (set -x ; git merge "$branch" )
-done <./recipe
+done
