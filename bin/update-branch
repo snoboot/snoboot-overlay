@@ -19,6 +19,9 @@ while read line; do
   if [ -n "$prefix" ]; then
     prefixedBranch="$prefix$branch"
     git rev-parse --verify --quiet "$prefixedBranch" >/dev/null && branch="$prefixedBranch"
+  else
+    # Branch not found locally -- try "upstream"
+    git rev-parse --verify --quiet "$branch" >/dev/null || branch="upstream/"$branch
   fi
 
   (set -x ; git merge "$branch" )
