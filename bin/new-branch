@@ -10,6 +10,15 @@ cd "$(dirname $0)/.."
 
 set -e
 currentBranch=$(git branch --show-current)
+if [ -z "$currentBranch" ]; then
+  echo "Currently not on a branch" >&2
+  exit 1
+fi
+
 git checkout -b "$1"
 
-cat ./recipe | grep -xq "$currentBranch" || echo "$currentBranch" >> ./recipe
+cat ./recipe | grep -xq "$currentBranch" || (
+  echo "$currentBranch" >> ./recipe
+  git add ./recipe
+  git commit -m "New branch based on: $currentBranch"
+)
