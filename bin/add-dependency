@@ -1,0 +1,51 @@
+#!/bin/bash
+#
+# Adds new dependencies to the current branch
+#
+# SPDX-License-Identifier: Apache-2.0
+# Copyright 2020 Christian Kohlschuetter -- see NOTICE file
+
+cd "$(dirname $0)/.."
+
+newBranch="$1"
+if [[ $# -lt 1 ]]; then
+  echo "Syntax: $(basename $0) <dependency>+"
+  exit 1
+fi
+
+set -e
+
+deps=()
+branches=()
+while [ $# -gt 0 ]; do
+  dep="$1"
+  shift
+
+  branch=""
+  for f in "" "upstream/"; do
+    branch="$f$dep"
+    git rev-parse --verify --quiet "$branch" >/dev/null && break
+  done
+  if [ $? -ne 0 ]; then
+    echo "This doesn't look like a branch we know: $dep" >&2
+    exit 1
+  fi
+
+  escaped=${dep//// }
+
+  depFile="./dependencies/$escaped"
+  if [ -e "$depFile" ]; then
+    echo "Skipping existing dependency: $dep"
+    continue
+  fi
+
+  deps+=("$dep")
+  branches+=("$branch")
+done
+
+if [ ${#deps[@]} -eq 0 ]; then
+  echo "Nothing to do"
+  exit 0
+fi
+
+git merge --no-ff --no-edit ${deps[@]}

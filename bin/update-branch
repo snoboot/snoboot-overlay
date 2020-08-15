@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/bin/bash
 #
 # Updates the current branch, by merging the branches specified
 # as dependencies
@@ -13,6 +13,7 @@ prefix=
 
 set -e
 
+branches=()
 IFS=$'\n'
 for file in $(ls -1 -t -r dependencies); do
   branch=${file// //}
@@ -24,5 +25,7 @@ for file in $(ls -1 -t -r dependencies); do
     git rev-parse --verify --quiet "$branch" >/dev/null || branch="upstream/"$branch
   fi
 
-  (set -x ; git merge --no-ff "$branch" )
+  branches+=("$branch")
 done
+
+git merge --no-ff --no-edit ${branches[@]}

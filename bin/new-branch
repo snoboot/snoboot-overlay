@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/bin/bash
 #
 # Creates a new git branch, and appends the current branch's name
 # to its dependencies
@@ -8,18 +8,74 @@
 
 cd "$(dirname $0)/.."
 
-set -e
-currentBranch=$(git branch --show-current)
-if [ -z "$currentBranch" ]; then
-  echo "Currently not on a branch" >&2
+newBranch="$1"
+if [[ $# -eq 0 || -z "$newBranch" ]]; then
+  echo "Syntax: $(basename $0) <new-branch-name> [<dependency>]*"
   exit 1
 fi
 
-git checkout -b "$1"
+set -e
+
+deps=()
+branches=()
+
+deps+=("base")
+baseBranch=""
+for f in "" "upstream/"; do
+    baseBranch="${f}base"
+    git rev-parse --verify --quiet "$baseBranch" >/dev/null && break
+done
+if [ $? -ne 0 ]; then
+    echo "Could not find 'base' branch" >&2
+    exit 1
+fi
+branches+=("$baseBranch")
+
+if [ $# -lt 2 ]; then
+  currentBranch=$(git branch --show-current)
+  if [ -z "$currentBranch" ]; then
+    echo "Currently not on a branch. Try specifying " >&2
+    exit 1
+  fi
+  
+  if [ "$currentBranch" != "base" ]; then
+    deps+=("$currentBranch")
+    branches+=("$currentBranch")
+  fi
+else
+  shift
+  while [ $# -gt 0 ]; do
+    dep="$1"
+    shift
+
+    branch=""
+    for f in "" "upstream/"; do
+      branch="$f$dep"
+      git rev-parse --verify --quiet "$branch" >/dev/null && break
+    done
+    if [ $? -ne 0 ]; then
+      echo "This doesn't look like a branch we know: $dep" >&2
+      exit 1
+    fi
+
+    deps+=("$dep")
+    branches+=("$branch")
+  done
+fi
+
+set -x
+git checkout -b "$newBranch" base
 
 mkdir -p ./dependencies
-escapedBranchName=${currentBranch//// }
-depFile="./dependencies/$escapedBranchName"
+
+git merge --no-ff --no-edit --no-commit ${branches[@]}
+
+escaped=${newBranch//// }
+depFile="./dependencies/$escaped"
 touch "$depFile"
 git add "$depFile"
-git commit -m "New branch based on: $currentBranch"
+
+git commit --no-edit || git commit --no-edit -m \
+  "New branch
+
+Based on: ${deps[*]}"
